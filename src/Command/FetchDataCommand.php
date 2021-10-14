@@ -18,6 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class FetchDataCommand extends Command
 {
     private const SOURCE = 'https://trailers.apple.com/trailers/home/rss/newtrailers.rss';
+    private const MAX_COUNT = 10;
 
     protected static $defaultName = 'fetch:trailers';
 
@@ -89,15 +90,18 @@ class FetchDataCommand extends Command
         if (!property_exists($xml, 'channel')) {
             throw new RuntimeException('Could not find \'channel\' element in feed');
         }
-        foreach ($xml->channel->item as $item) {
+        foreach ($xml->channel->item as $key => $item) {
             $trailer = $this->getMovie((string) $item->title)
                 ->setTitle((string) $item->title)
                 ->setDescription((string) $item->description)
                 ->setLink((string) $item->link)
                 ->setPubDate($this->parseDate((string) $item->pubDate))
             ;
-
             $this->doctrine->persist($trailer);
+
+            if (self::MAX_COUNT <= $key + 1) {
+                break;
+            }
         }
 
         $this->doctrine->flush();
