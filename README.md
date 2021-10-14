@@ -1,3 +1,18 @@
+# Как запустить (инструкция)
+
+* Склонировать репозиторий в рабочую директорию: 
+`git clone https://github.com/codereav/creative-test.git /var/www/app`
+* Сохранить копию .env.dist как .env, задать корректные значения переменных
+* Если используете docker-compose:
+    - `docker-compose up`
+    - `chown -R www-data:www-data /var/www/app`
+    - проект будет доступен по http://localhost:80
+* Если НЕ используете docker-compose - вручную создать БД
+* Выполнить команды в консоли:
+    - `composer install`
+    - `bin/console orm:schema-tool:update --force`
+
+
 Тестовое задание для PHP-программиста
 =====================================
 
