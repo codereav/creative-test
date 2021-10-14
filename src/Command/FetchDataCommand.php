@@ -108,15 +108,7 @@ class FetchDataCommand extends Command
                 }
             }
             $this->doctrine->flush();
-            $this
-                ->doctrine
-                ->getRepository(Movie::class)
-                ->createQueryBuilder('m')
-                ->delete()
-                ->where('m.id NOT IN (:trailers)')
-                ->setParameter('trailers', $trailers)
-                ->getQuery()
-                ->execute();
+            $this->deleteTrailersNotIn($trailers);
             $this->doctrine->commit();
         } catch (\Throwable $e) {
             if ($this->doctrine->getConnection()->isTransactionActive()) {
@@ -147,5 +139,21 @@ class FetchDataCommand extends Command
         }
 
         return $item;
+    }
+
+    /**
+     * @param array $trailers
+     */
+    protected function deleteTrailersNotIn(array $trailers)
+    {
+        $this
+            ->doctrine
+            ->getRepository(Movie::class)
+            ->createQueryBuilder('m')
+            ->delete()
+            ->where('m.id NOT IN (:trailers)')
+            ->setParameter('trailers', $trailers)
+            ->getQuery()
+            ->execute();
     }
 }
