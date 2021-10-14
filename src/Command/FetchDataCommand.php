@@ -90,21 +90,40 @@ class FetchDataCommand extends Command
         if (!property_exists($xml, 'channel')) {
             throw new RuntimeException('Could not find \'channel\' element in feed');
         }
-        foreach ($xml->channel->item as $key => $item) {
-            $trailer = $this->getMovie((string) $item->title)
-                ->setTitle((string) $item->title)
-                ->setDescription((string) $item->description)
-                ->setLink((string) $item->link)
-                ->setPubDate($this->parseDate((string) $item->pubDate))
-            ;
-            $this->doctrine->persist($trailer);
-
-            if (self::MAX_COUNT <= $key + 1) {
-                break;
+        try {
+            $this->doctrine->beginTransaction();
+            $trailers = [];
+            $count = 0;
+            foreach ($xml->channel->item as $item) {
+                $trailer = $this->getMovie((string)$item->title)
+                    ->setTitle((string)$item->title)
+                    ->setDescription((string)$item->description)
+                    ->setLink((string)$item->link)
+                    ->setPubDate($this->parseDate((string)$item->pubDate));
+                $this->doctrine->persist($trailer);
+                $trailers[] = $trailer;
+                ++$count;
+                if (self::MAX_COUNT <= $count) {
+                    break;
+                }
             }
+            $this->doctrine->flush();
+            $this
+                ->doctrine
+                ->getRepository(Movie::class)
+                ->createQueryBuilder('m')
+                ->delete()
+                ->where('m.id NOT IN (:trailers)')
+                ->setParameter('trailers', $trailers)
+                ->getQuery()
+                ->execute();
+            $this->doctrine->commit();
+        } catch (\Throwable $e) {
+            if ($this->doctrine->getConnection()->isTransactionActive()) {
+                $this->doctrine->rollback();
+            }
+            throw $e;
         }
-
-        $this->doctrine->flush();
     }
 
     protected function parseDate(string $date): \DateTime
