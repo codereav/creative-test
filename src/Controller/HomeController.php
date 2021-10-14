@@ -17,16 +17,19 @@ class HomeController
 {
     public function __construct(
         private RouteCollectorInterface $routeCollector,
-        private Environment $twig,
-        private EntityManagerInterface $em
-    ) {}
+        private Environment             $twig,
+        private EntityManagerInterface  $em
+    )
+    {
+    }
 
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         try {
-            $data = $this->twig->render('home/index.html.twig', [
-                'trailers' => $this->fetchData(),
-            ]);
+            $data = $this->twig->render(
+                'home/index.html.twig',
+                array_merge(['trailers' => $this->fetchData()], $this->getDebugInfo())
+            );
         } catch (\Exception $e) {
             throw new HttpBadRequestException($request, $e->getMessage(), $e);
         }
@@ -62,5 +65,16 @@ class HomeController
             ->findBy([], ['pubDate' => 'desc']);
 
         return new ArrayCollection($data);
+    }
+
+    private function getDebugInfo(): array
+    {
+        return [
+            'debug' => [
+                'currentDateTime' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'currentController' => get_class($this),
+                'currentMethod' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'],
+            ],
+        ];
     }
 }
