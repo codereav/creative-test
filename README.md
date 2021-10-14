@@ -7,10 +7,15 @@
     - `docker-compose up`
     - `chown -R www-data:www-data /var/www/app`
     - проект будет доступен по http://localhost:80
-* Если НЕ используете docker-compose - вручную создать БД
+* Если НЕ используете docker-compose:
+    - вручную создать БД
+    - Настроить nginx (пример конфига можно взять из docker/nginx/conf.d/app.conf )
 * Выполнить команды в консоли:
     - `composer install`
     - `bin/console orm:schema-tool:update --force`
+
+  
+* Команда для обновления списка трейлеров: `bin/console fetch:trailers` (в случае расхождения удалит старые трейлеры из БД)
 
 
 Тестовое задание для PHP-программиста
