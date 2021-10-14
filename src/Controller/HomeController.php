@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Exception\HttpBadRequestException;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Interfaces\RouteCollectorInterface;
 use Twig\Environment;
 
@@ -25,6 +26,26 @@ class HomeController
         try {
             $data = $this->twig->render('home/index.html.twig', [
                 'trailers' => $this->fetchData(),
+            ]);
+        } catch (\Exception $e) {
+            throw new HttpBadRequestException($request, $e->getMessage(), $e);
+        }
+
+        $response->getBody()->write($data);
+
+        return $response;
+    }
+
+    public function info(ServerRequestInterface $request, ResponseInterface $response, array $uriData): ResponseInterface
+    {
+        $id = (int) $uriData['id'] ?? null;
+        $trailer = $this->em->getRepository(Movie::class)->find($id);
+        if (!$trailer instanceof Movie) {
+            throw new HttpNotFoundException($request, 'Trailer is missing');
+        }
+        try {
+            $data = $this->twig->render('home/info.html.twig', [
+                'trailer' => $trailer,
             ]);
         } catch (\Exception $e) {
             throw new HttpBadRequestException($request, $e->getMessage(), $e);

@@ -1,0 +1,24 @@
+{% extends 'main.html.twig' %}
+
+{% block title %}{{ trailer.title }} | info{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1 class="mt-5 mb-4">{{ trailer.title }} | info</h1>
+        <table class="table table-bordered">
+                <tr>
+                    <td colspan="2">{{ trailer.title }}</td>
+                </tr>
+                <tr>
+                    <td>{{ trailer.description }}</td>
+                    <td style="width: 50%"><img width="100%" alt="{{ trailer.title }}" src="{{ trailer.link }}/images/background.jpg"></td>
+                </tr>
+            <tr>
+                <td colspan="2">
+                    Source: <a target="_blank" href="{{ trailer.link }}">{{ trailer.link }}</a>
+                </td>
+            </tr>
+        </table>
+        <a href="/"><button type="button">Back to list</button></a>
+    </div>
+{% endblock %}
