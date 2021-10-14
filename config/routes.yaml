@@ -2,6 +2,7 @@ main:
   method: 'get'
   path: ~
   controller: App\Controller\HomeController
+  construct: [ Slim\Interfaces\RouteCollectorInterface, Twig\Environment, Doctrine\ORM\EntityManagerInterface ]
   action: index
 
 info:
