@@ -24,7 +24,6 @@ class FetchDataCommand extends Command
 
     private ClientInterface $httpClient;
     private LoggerInterface $logger;
-    private string $source;
     private EntityManagerInterface $doctrine;
 
     /**
@@ -84,9 +83,6 @@ class FetchDataCommand extends Command
     protected function processXml(string $data): void
     {
         $xml = (new \SimpleXMLElement($data))->children();
-//        $namespace = $xml->getNamespaces(true)['content'];
-//        dd((string) $xml->channel->item[0]->children($namespace)->encoded);
-
         if (!property_exists($xml, 'channel')) {
             throw new RuntimeException('Could not find \'channel\' element in feed');
         }
@@ -129,10 +125,9 @@ class FetchDataCommand extends Command
 
         if ($item === null) {
             $this->logger->info('Create new Movie', ['title' => $title]);
-            $item = new Movie();
-        } else {
-            $this->logger->info('Move found', ['title' => $title]);
+            return new Movie();
         }
+        $this->logger->info('Move found', ['title' => $title]);
 
         return $item;
     }
