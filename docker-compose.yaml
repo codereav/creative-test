@@ -1,5 +1,11 @@
 version: '3.7'
 
+networks:
+  creative:
+    ipam:
+      config:
+        - subnet: 172.27.0.0/16
+
 services:
   app:
     build:
@@ -11,8 +17,10 @@ services:
       COMPOSER_MEMORY_LIMIT: -1
       COMPOSER_ALLOW_SUPERUSER: 1
       APP_ENV: 'dev'
-    ports:
-      - 8080:8080
+    links:
+      - database
+    networks:
+      - creative
 
   database:
     image: mysql:5.7
@@ -20,6 +28,19 @@ services:
       - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: mysql
-      MYSQL_DATABASE: slim_project
-      MYSQL_USER: webmaster
-      MYSQL_PASSWORD: webmaster
+    networks:
+      creative:
+        ipv4_address: 172.27.0.2
+
+  web:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - .:/var/www/app
+      - ${DOCUMENT_ROOT-./docker/nginx/conf.d}:/etc/nginx/conf.d
+    links:
+      - app
+    networks:
+      - creative
